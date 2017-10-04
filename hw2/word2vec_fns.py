@@ -16,8 +16,9 @@ def generate_batch(data, batch_size, skip_window):
     Batch is a vector of shape (batch_size, 2*skip_window), with each entry for the batch containing all the context words, with the corresponding label being the word in the middle of the context
     """
     global data_index
-    assert batch_size % num_skips == 0
-    assert num_skips <= 2 * skip_window
+   # assert batch_size % num_skips == 0
+    #assert num_skips <= 2 * skip_window
+
     batch = np.ndarray(shape=(batch_size), dtype=np.int32)
     labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
     span = 2 * skip_window + 1  # [ skip_window target skip_window ]
@@ -25,7 +26,9 @@ def generate_batch(data, batch_size, skip_window):
     if data_index + span > len(data):
         data_index = 0
     buffer.extend(data[data_index:data_index + span])
+    print(buffer)
     data_index += span
+ 
     for i in range(batch_size // num_skips):
         target = skip_window  # target label at the center of the buffer
         targets_to_avoid = [skip_window]
