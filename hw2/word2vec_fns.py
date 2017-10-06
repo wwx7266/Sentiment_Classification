@@ -68,7 +68,6 @@ def generate_batch(data, batch_size, skip_window):
     # Backtrack a little bit to avoid skipping words in the end of a batch
     data_index = (data_index - span) % len(data)
     return batch, labels
-
 def get_mean_context_embeds(embeddings, train_inputs):
     """
     :param embeddings (tf.Variable(shape=(vocabulary_size, embedding_size))
@@ -80,6 +79,17 @@ def get_mean_context_embeds(embeddings, train_inputs):
     """
     # cpu is recommended to avoid out of memory errors, if you don't
     # have a high capacity GPU
+
     with tf.device('/cpu:0'):
-        pass
+        
+        tempEmbeds = None
+        for i in range(train_inputs.get_shape().as_list()[1]):
+            temp = tf.nn.embedding_lookup(embeddings, train_inputs[:,i])
+            x,y = temp.get_shape().as_list()
+            if tempEmbeds is None:
+                tempEmbeds = tf.reshape(temp,[x,y,1])
+            else:
+                tempEmbeds = tf.concat([tempEmbeds,tf.reshape(temp,[x,y,1])],2)
+         
+        mean_context_embeds =  tf.reduce_mean(tempEmbeds,2)
     return mean_context_embeds
