@@ -40,8 +40,9 @@ def generate_batch(data, batch_size, skip_window):
             data_index = span
         batch[j] = [buffer[i] for i in range(span) if i != skip_window]
         labels[j] = buffer[skip_window]
-        data_index += 1
         buffer.append(data[data_index])
+        data_index += 1
+        
 
 
 
