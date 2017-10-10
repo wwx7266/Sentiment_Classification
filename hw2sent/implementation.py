@@ -3,6 +3,7 @@ import numpy as np
 import glob #this will be useful when reading reviews from file
 import os
 import tarfile
+from _collections import defaultdict
 
 
 batch_size = 50
@@ -27,9 +28,15 @@ def load_glove_embeddings():
             word_index_dict: a dictionary matching a word in string form to
             its index in the embeddings array. e.g. {"apple": 119"}
     """
-    #data = open("glove.6B.50d.txt",'r',encoding="utf-8")
-    #if you are running on the CSE machines, you can load the glove data from here
-    #data = open("/home/cs9444/public_html/17s2/hw2/glove.6B.50d.txt",'r',encoding="utf-8")
+    data = open("glove.6B.50d.txt",'r',encoding="utf-8")
+    embeddings = []
+    word_index_dict = defaultdict()
+    index = 0
+    for word in data:
+        wordVector = word.split(" ")
+        embeddings.append(wordVector[1:-1])
+        word_index_dict[wordVector[0]] = index
+        index+=1
     return embeddings, word_index_dict
 
 
