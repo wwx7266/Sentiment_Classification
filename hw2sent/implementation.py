@@ -3,6 +3,7 @@ import numpy as np
 import glob #this will be useful when reading reviews from file
 import os
 import tarfile
+import string
 from _collections import defaultdict
 
 
@@ -16,6 +17,31 @@ def load_data(glove_dict):
     reviews should be the negative reviews.
     RETURN: numpy array of data with each row being a review in vectorized
     form"""
+    filename = check_file('reviews.tar.gz',14839260)
+    extract_data(filename)
+    dir= os.path.dirname(__file__)
+
+    files= glob.glob(os.path.join(dir,
+                                    'data2/pos/*'))
+    files.extend(glob.glob(os.path.join(dir,
+                                    'data2/neg/*')))
+
+    num_words = []
+
+    for f in files:
+        with open(f, 'r') as openf:
+            s = openf.read()
+            no_punct = ''.join(c for c in s if c not in string.punctuation)
+            num_words.extend(no_punct.split())
+
+    print(num_words[:5])
+
+    fname = files[3]
+    with open(fname) as f:
+        for lines in f:
+            print(lines)
+            exit
+
     return data
 
 
@@ -32,8 +58,10 @@ def load_glove_embeddings():
     embeddings = []
     word_index_dict = defaultdict()
     index = 0
-    for word in data:
-        wordVector = word.split(" ")
+    for lines in data:
+        wordVector = lines.split(" ")
+        if(wordVector[0] in string.punctuation):
+            continue
         embeddings.append(wordVector[1:-1])
         word_index_dict[wordVector[0]] = index
         index+=1
@@ -56,3 +84,25 @@ def define_graph(glove_embeddings_arr):
     dropout_keep_prob = tf.placeholder_with_default(1.0, shape=())
 
     return input_data, labels, dropout_keep_prob, optimizer, accuracy, loss
+
+
+def check_file(filename, expected_bytes):
+    """Download a file if not present, and make sure it's the right size."""
+    if not os.path.exists(filename):
+        print("please make sure {0} exists in the current directory".format(filename))
+    statinfo = os.stat(filename)
+    if statinfo.st_size == expected_bytes:
+        print('Found and verified', filename)
+    else:
+        print(statinfo.st_size)
+        raise Exception(
+            "File {0} didn't have the expected size. Please ensure you have downloaded the assignment files correctly".format(filename))
+    return filename
+
+def extract_data(filename):
+    """Extract data from tarball and store as list of strings"""
+    if not os.path.exists(os.path.join(os.path.dirname(__file__), 'data2/')):
+        with tarfile.open(filename, "r") as tarball:
+            dir = os.path.dirname(__file__)
+            tarball.extractall(os.path.join(dir, 'data2/'))
+    return
