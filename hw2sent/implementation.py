@@ -31,10 +31,14 @@ def load_data(glove_dict):
     for f in files:
         with open(f, 'r') as openf:
             s = openf.read()
-            no_punct = ''.join(c for c in s if c not in string.punctuation)
-            num_words.extend(no_punct.split())
+            words = s.split(" ")
+            for word in words:
+                if(word in string.punctuation or any(char.isdigit() for char in word)):
+                    continue
+                num_words.append(word)
+      
 
-    print(num_words[:5])
+    print(num_words[1:5])
 
     fname = files[3]
     with open(fname) as f:
