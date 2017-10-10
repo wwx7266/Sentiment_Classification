@@ -60,7 +60,7 @@ def load_glove_embeddings():
     index = 0
     for lines in data:
         wordVector = lines.split(" ")
-        if(wordVector[0] in string.punctuation):
+        if(wordVector[0] in string.punctuation or any(char.isdigit() for char in wordVector[0])):
             continue
         embeddings.append(wordVector[1:-1])
         word_index_dict[wordVector[0]] = index
