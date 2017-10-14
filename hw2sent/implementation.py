@@ -4,10 +4,12 @@ import glob #this will be useful when reading reviews from file
 import os
 import tarfile
 import string
+import re
 from _collections import defaultdict
 
 
 batch_size = 50
+strip_special_chars = re.compile("[^A-Za-z0-9 ]+")
 
 def load_data(glove_dict):
     """
@@ -17,36 +19,35 @@ def load_data(glove_dict):
     reviews should be the negative reviews.
     RETURN: numpy array of data with each row being a review in vectorized
     form"""
-    filename = check_file('reviews.tar.gz',14839260)
-    extract_data(filename)
-    dir= os.path.dirname(__file__)
+    if os.path.exists(os.path.join(os.path.dirname(__file__), "data.npy")):
+        print("loading saved parsed data, to reparse, delete 'data.npy'")
+        data = np.load("data.npy")
+        return data
+    else:
+        filename = check_file('reviews.tar.gz',14839260)
+        extract_data(filename)
+        dir= os.path.dirname(__file__)
 
-    files= glob.glob(os.path.join(dir,
-                                    'data2/pos/*'))
-    files.extend(glob.glob(os.path.join(dir,
-                                    'data2/neg/*')))
+        files= glob.glob(os.path.join(dir,
+                                        'data2/pos/*'))
+        files.extend(glob.glob(os.path.join(dir,
+                                        'data2/neg/*')))
 
-    num_words = []
+        data = []
 
-    for f in files:
-        with open(f, 'r') as openf:
-            s = openf.read()
-            words = s.split(" ")
-            for word in words:
-                if(word in string.punctuation or any(char.isdigit() for char in word)):
-                    continue
-                num_words.append(word)
-      
-
-    print(num_words[1:5])
-
-    fname = files[3]
-    with open(fname) as f:
-        for lines in f:
-            print(lines)
-            exit
-
-    return data
+        for f in files:
+            with open(f, 'r') as openf:
+                s = openf.read()
+                clean_line(s)
+                words = s.split(" ")
+                for word in words:
+                    if(word in string.punctuation or any(char.isdigit() for char in word)):
+                        continue
+                    data.append(word)
+          
+        print(data[:5])
+        # np.save("data", data)
+        return data
 
 
 def load_glove_embeddings():
@@ -110,3 +111,8 @@ def extract_data(filename):
             dir = os.path.dirname(__file__)
             tarball.extractall(os.path.join(dir, 'data2/'))
     return
+
+def clean_line(string):
+
+    string = string.lower().replace("<br />", " ")
+    return re.sub(strip_special_chars, "", string.lower())
